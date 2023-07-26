@@ -8,7 +8,7 @@
 // @downloadURL  https://cdn.jsdelivr.net/gh/List-KR/linkproduct-privacy@main/linkproduct-privacy.user.js
 // @license      MIT
 //
-// @version      1.0.1
+// @version      1.0.2
 // @author       PiQuark6046 and contributors
 //
 // @match        *://*/*
@@ -17,7 +17,7 @@
 // @description:ko     linkproduct-privacy는 인플루언서 마케팅 URL에서 원본 URL을 얻을 수 있습니다.
 //
 // @grant        unsafeWindow
-// @grant        GM.xmlhttpRequest
+// @grant        GM_xmlhttpRequest
 // @run-at       document-end
 // ==/UserScript==
 
