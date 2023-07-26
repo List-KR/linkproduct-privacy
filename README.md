@@ -7,7 +7,7 @@ linkproduct-privacy는 인플루언서 마케팅 URL에서 원본 URL을 얻어 
 ### 빠른 시작
 이 유저스크립트를 감지시키기 위해 아래 URL를 클릭하세요.
 
-https://github.com/List-KR/linkproduct-privacy/blob/main/linkproduct-privacy.user.js
+https://cdn.jsdelivr.net/gh/List-KR/linkproduct-privacy@main/linkproduct-privacy.user.js
 
 ### 설치하는 방법
 - [Violentmonkey](https://addons.mozilla.org/ko/firefox/addon/violentmonkey/) (AdGuard 프리미엄에 접근하실 수 없으시면 권장됩니다) - 브라우저 확장
@@ -16,7 +16,7 @@ https://github.com/List-KR/linkproduct-privacy/blob/main/linkproduct-privacy.use
     3. `URL에서 설치` 버튼을 클릭하세요.
     4. 아래 URL를 입력하세요:
     ```
-    https://github.com/List-KR/linkproduct-privacy/blob/main/linkproduct-privacy.user.js
+    https://cdn.jsdelivr.net/gh/List-KR/linkproduct-privacy@main/linkproduct-privacy.user.js
     ```
     5. `확인` 버튼을 클릭하세요.
     6. 유저스크립트의 메타데이터를 확인하시고 `설치 확인`를 클릭하세요.
@@ -27,7 +27,7 @@ https://github.com/List-KR/linkproduct-privacy/blob/main/linkproduct-privacy.use
     2. `도구` 탭으로 이동하세요.
     3. `Install from URL`로 아래 URL를 입력하세요:
         ```
-        https://github.com/List-KR/linkproduct-privacy/blob/main/linkproduct-privacy.user.js
+        https://cdn.jsdelivr.net/gh/List-KR/linkproduct-privacy@main/linkproduct-privacy.user.js
         ```
     4. `설치` 버튼을 클릭하세요.
     5. 유저스크립트의 메타데이터를 확인하시고 `설치`를 클릭하세요.
@@ -50,7 +50,7 @@ https://github.com/List-KR/linkproduct-privacy/blob/main/linkproduct-privacy.use
     3. `확장 프로그램 추가`를 클릭하세요.
     4. 아래 URL를 입력하세요:
         ```
-        https://github.com/List-KR/linkproduct-privacy/blob/main/linkproduct-privacy.user.js
+        https://cdn.jsdelivr.net/gh/List-KR/linkproduct-privacy@main/linkproduct-privacy.user.js
         ```
     5. `설치`를 클릭하세요.
     6. 유저스크립트의 메타데이터를 확인하시고 `설치`를 클릭하세요.
@@ -62,7 +62,7 @@ https://github.com/List-KR/linkproduct-privacy/blob/main/linkproduct-privacy.use
     2. `새 확장 프로그램`을 터치하세요.
     3. 아래 URL를 입력하세요:
         ```
-        https://github.com/List-KR/linkproduct-privacy/blob/main/linkproduct-privacy.user.js
+        https://cdn.jsdelivr.net/gh/List-KR/linkproduct-privacy@main/linkproduct-privacy.user.js
         ```
     4. `다음`을 터치하세요.
     5. 유저스크립트의 메타데이터를 확인하시고 `추가`를 클릭하세요.
@@ -83,7 +83,7 @@ https://github.com/List-KR/linkproduct-privacy/blob/main/linkproduct-privacy.use
     4. iOS 설정 -> Safari -> 확장 프로그램 -> Userscripts -> 모든 웹 사이트에 대해 허용으로 바꿔주세요.
     5. 아래 URL를 Safari로 열어주세요.
         ```
-        https://github.com/List-KR/linkproduct-privacy/blob/main/linkproduct-privacy.user.js
+        https://cdn.jsdelivr.net/gh/List-KR/linkproduct-privacy@main/linkproduct-privacy.user.js
         ```
     6. Safari의 주소 막대에서 확장 프로그램 아이콘을 누르고 Userscripts 앱을 엽니다.
     7.  `Tab to install`을 클릭 후 완료 버튼을 누러주세요.
