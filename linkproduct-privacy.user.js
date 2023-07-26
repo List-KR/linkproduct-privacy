@@ -8,7 +8,7 @@
 // @downloadURL  https://cdn.jsdelivr.net/gh/List-KR/linkproduct-privacy@main/linkproduct-privacy.user.js
 // @license      MIT
 //
-// @version      1.0.0
+// @version      1.0.1
 // @author       PiQuark6046 and contributors
 //
 // @match        *://*/*
@@ -21,6 +21,7 @@
 // @run-at       document-end
 // ==/UserScript==
 (function () {
+    const GMXmlhttpRequest = typeof GM.xmlhttpRequest !== 'undefined' ? GM.xmlhttpRequest : GM_xmlhttpRequest;
     const LinkProductURLs = [
         '//app.ac/',
         '//link.coupang.com/a/'
@@ -33,7 +34,7 @@
             console.warn('linkproduct-privacy: URLAddress is null.', LinkElement);
             continue;
         }
-        GM.xmlhttpRequest({ url: URLAddress, method: 'GET', responseType: 'document', anonymous: true, onload: function (ResponseObject) {
+        GMXmlhttpRequest({ url: URLAddress, method: 'GET', responseType: 'document', anonymous: true, onload: function (ResponseObject) {
                 LinkElement.setAttribute('href', ResponseObject.finalUrl);
                 LinkElement.innerText = ResponseObject.finalUrl;
                 console.debug('linkproduct-privacy: Completed for:', { 'Element': LinkElement, 'Affiliate marketing URL': URLAddress });
