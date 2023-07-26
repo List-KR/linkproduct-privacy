@@ -8,7 +8,7 @@
 // @downloadURL  https://cdn.jsdelivr.net/gh/List-KR/linkproduct-privacy@main/linkproduct-privacy.user.js
 // @license      MIT
 //
-// @version      0.0.1
+// @version      1.0.0
 // @author       PiQuark6046 and contributors
 //
 // @match        *://*/*
@@ -21,4 +21,22 @@
 // @run-at       document-end
 // ==/UserScript==
 (function () {
+    const LinkProductURLs = [
+        '//app.ac/',
+        '//link.coupang.com/a/'
+    ];
+    let LinkElements = document.querySelectorAll(LinkProductURLs.map(function (Value) { return `a[href*="${Value}"]`; }).join(', '));
+    console.debug('linkproduct-privacy: LinkElements: ', LinkElements);
+    for (let LinkElement of LinkElements) {
+        let URLAddress = LinkElement.getAttribute('href');
+        if (URLAddress === null) {
+            console.warn('linkproduct-privacy: URLAddress is null.', LinkElement);
+            continue;
+        }
+        GM.xmlhttpRequest({ url: URLAddress, method: 'GET', responseType: 'document', anonymous: true, onload: function (ResponseObject) {
+                LinkElement.setAttribute('href', ResponseObject.finalUrl);
+                LinkElement.innerText = ResponseObject.finalUrl;
+                console.debug('linkproduct-privacy: Completed for:', { 'Element': LinkElement, 'Affiliate marketing URL': URLAddress });
+            } });
+    }
 })();
