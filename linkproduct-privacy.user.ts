@@ -8,7 +8,7 @@
 // @downloadURL  https://cdn.jsdelivr.net/gh/List-KR/linkproduct-privacy@main/linkproduct-privacy.user.js
 // @license      MIT
 //
-// @version      1.1.0
+// @version      1.1.1
 // @author       PiQuark6046 and contributors
 //
 // @match        *://*/*
@@ -82,7 +82,8 @@ interface LinkResultURL {
     '//app.ac/',
     '//link.coupang.com/a/',
     '//link.coupang.com/re/',
-    '//qoo.tn/'
+    '//qoo.tn/',
+    '//s.click.aliexpress.com/s/'
   ]
   const LinkResultURLs: Array<LinkResultURL> = [
     {
@@ -151,6 +152,14 @@ interface LinkResultURL {
     },
     {
       URLPattern: /^https:\/\/[a-z]+\.lotteon\.com\/m\/product\/[A-z0-9]+/,
+      ModificationFunction: function (ResultURL: string) {
+        let Oringin = new URL(ResultURL).origin
+        let Pathname = new URL(ResultURL).pathname
+        return Oringin + Pathname
+      }
+    },
+    {
+      URLPattern: /^https:\/\/(m\.)?[a-z]+\.aliexpress\.com\/item\/[0-9]+\.html/,
       ModificationFunction: function (ResultURL: string) {
         let Oringin = new URL(ResultURL).origin
         let Pathname = new URL(ResultURL).pathname
