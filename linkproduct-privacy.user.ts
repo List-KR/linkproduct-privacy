@@ -8,7 +8,7 @@
 // @downloadURL  https://cdn.jsdelivr.net/gh/List-KR/linkproduct-privacy@main/linkproduct-privacy.user.js
 // @license      MIT
 //
-// @version      1.1.1
+// @version      1.2.0
 // @author       PiQuark6046 and contributors
 //
 // @match        *://*/*
@@ -75,15 +75,32 @@ interface LinkResultURL {
   URLPattern: RegExp,
   ModificationFunction: (ResultURL: string) => string
 }
+interface LinkProductURL {
+  URLPattern: string
+  OnSite?: string
+}
 
 (function () {
   const GMXmlhttpRequest = typeof GM.xmlhttpRequest !== 'undefined' ? GM.xmlhttpRequest : GM_xmlhttpRequest
-  const LinkProductURLs = [
-    '//app.ac/',
-    '//link.coupang.com/a/',
-    '//link.coupang.com/re/',
-    '//qoo.tn/',
-    '//s.click.aliexpress.com/s/'
+  const LinkProductURLs: Array<LinkProductURL> = [
+    {
+      URLPattern: '//app.ac/'
+    },
+    {
+      URLPattern: '//link.coupang.com/a/'
+    },
+    {
+      URLPattern: '//link.coupang.com/a/'
+    },
+    {
+      URLPattern: '//link.coupang.com/re/'
+    },
+    {
+      URLPattern: '//qoo.tn/'
+    },
+    {
+      URLPattern: '//s.click.aliexpress.com/s/'
+    }
   ]
   const LinkResultURLs: Array<LinkResultURL> = [
     {
@@ -167,7 +184,9 @@ interface LinkResultURL {
       }
     }
   ]
-  let LinkElements = document.querySelectorAll(LinkProductURLs.map(function(Value) { return `a[href*="${Value}"]` }).join(', ')) as NodeListOf<HTMLAnchorElement>
+  let LinkElements = Array.from(document.querySelectorAll(LinkProductURLs.filter(function (LinkProductURL) {
+    return typeof LinkProductURL.OnSite === 'undefined' || document.location.hostname.includes(LinkProductURL.OnSite)
+  }).map(function(Value) { return `a[href*="${Value.URLPattern}"]` }).join(', '))) as Array<HTMLAnchorElement>
   console.debug('linkproduct-privacy: LinkElements: ', LinkElements)
   for (let LinkElement of LinkElements) {
     let URLAddress = LinkElement.getAttribute('href')
