@@ -8,7 +8,7 @@
 // @downloadURL  https://cdn.jsdelivr.net/gh/List-KR/linkproduct-privacy@main/linkproduct-privacy.user.js
 // @license      MIT
 //
-// @version      1.2.1
+// @version      1.2.2
 // @author       PiQuark6046 and contributors
 //
 // @match        *://*/*
@@ -74,7 +74,7 @@ declare const GM_xmlhttpRequest: GM_xmlhttpRequest
 
 interface LinkResultURL {
   URLPattern: RegExp,
-  ModificationFunction: (ResultURL: string) => string
+  ModificationFunction: (ResultURL: string, ResultElement?: HTMLAnchorElement) => string
 }
 interface LinkProductURL {
   URLPattern: string
@@ -101,6 +101,10 @@ interface LinkProductURL {
     },
     {
       URLPattern: '//s.click.aliexpress.com/s/'
+    },
+    {
+      URLPattern: 'bbs/link.php?bo_table=hot&',
+      OnSite: 'etoland.co.kr'
     }
   ]
   const LinkResultURLs: Array<LinkResultURL> = [
@@ -183,6 +187,12 @@ interface LinkProductURL {
         let Pathname = new URL(ResultURL).pathname
         return Oringin + Pathname
       }
+    },
+    {
+      URLPattern: /^https:\/\/etoland\.co\.kr\/bbs\/link\.php\?bo_table=hot&/,
+      ModificationFunction: function (ResultURL: string, ResultElement: HTMLAnchorElement) {
+        return ResultElement.innerText
+      }
     }
   ]
   let LinkElements = Array.from(document.querySelectorAll(LinkProductURLs.filter(function (LinkProductURL) {
@@ -200,7 +210,7 @@ interface LinkProductURL {
       let ResponseURL = ResponseObject.responseURL || ResponseObject.finalUrl
       for (let i = 0; i < LinkResultURLs.length; i++) {
         if (LinkResultURLs[i].URLPattern.test(ResponseURL)) {
-          UpdateURL = LinkResultURLs[i].ModificationFunction(ResponseURL)
+          UpdateURL = LinkResultURLs[i].ModificationFunction(ResponseURL, LinkElement)
           console.debug('linkproduct-privacy: The reponse URL matches a predefined URL:', {
             'Element': LinkElement, 'Affiliate marketing URL': URLAddress, 'Response URL': ResponseURL, 'Processed URL': UpdateURL
           })
