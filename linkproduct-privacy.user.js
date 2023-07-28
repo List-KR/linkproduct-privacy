@@ -8,7 +8,7 @@
 // @downloadURL  https://cdn.jsdelivr.net/gh/List-KR/linkproduct-privacy@main/linkproduct-privacy.user.js
 // @license      MIT
 //
-// @version      1.2.2
+// @version      1.2.3
 // @author       PiQuark6046 and contributors
 //
 // @match        *://*/*
@@ -44,6 +44,9 @@
         {
             URLPattern: 'bbs/link.php?bo_table=hot&',
             OnSite: 'etoland.co.kr'
+        },
+        {
+            URLPattern: '//click.linkprice.com/click.php?'
         }
     ];
     const LinkResultURLs = [
