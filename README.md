@@ -2,6 +2,8 @@
 
 [![jsDelivr Stats](https://data.jsdelivr.com/v1/package/gh/List-KR/linkproduct-privacy/badge)](https://www.jsdelivr.com/package/gh/List-KR/linkproduct-privacy)
 
+[Preview](https://github.com/List-KR/linkproduct-privacy/assets/98787049/957962cc-7394-4161-8666-220d543d7534)
+
 linkproduct-privacy는 인플루언서 마케팅 URL에서 원본 URL을 얻어 브라우징 프라이버시를 향상시킬 수 있습니다.
 
 ### 빠른 시작
