@@ -1,4 +1,4 @@
-## NamuLink
+## linkproduct-privacy
 
 [![jsDelivr Stats](https://data.jsdelivr.com/v1/package/gh/List-KR/linkproduct-privacy/badge)](https://www.jsdelivr.com/package/gh/List-KR/linkproduct-privacy)
 
