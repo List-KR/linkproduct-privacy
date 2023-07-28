@@ -8,7 +8,7 @@
 // @downloadURL  https://cdn.jsdelivr.net/gh/List-KR/linkproduct-privacy@main/linkproduct-privacy.user.js
 // @license      MIT
 //
-// @version      1.2.0
+// @version      1.2.1
 // @author       PiQuark6046 and contributors
 //
 // @match        *://*/*
@@ -61,7 +61,8 @@ interface GMXMLHttpRequestResponse {
   lengthComputable: boolean,
   loaded: number,
   totla: number,
-  finalUrl: string,
+  finalUrl?: string,
+  responseURL?: string,
   context: any
 }
 type GM = {
@@ -196,18 +197,19 @@ interface LinkProductURL {
     }
     GMXmlhttpRequest({url: URLAddress, method: 'GET', responseType: 'document', anonymous: true, onload: function (ResponseObject) {
       let UpdateURL: string
+      let ResponseURL = ResponseObject.responseURL || ResponseObject.finalUrl
       for (let i = 0; i < LinkResultURLs.length; i++) {
-        if (LinkResultURLs[i].URLPattern.test(ResponseObject.finalUrl)) {
-          UpdateURL = LinkResultURLs[i].ModificationFunction(ResponseObject.finalUrl)
+        if (LinkResultURLs[i].URLPattern.test(ResponseURL)) {
+          UpdateURL = LinkResultURLs[i].ModificationFunction(ResponseURL)
           console.debug('linkproduct-privacy: The reponse URL matches a predefined URL:', {
-            'Element': LinkElement, 'Affiliate marketing URL': URLAddress, 'Response URL': ResponseObject.finalUrl, 'Processed URL': UpdateURL
+            'Element': LinkElement, 'Affiliate marketing URL': URLAddress, 'Response URL': ResponseURL, 'Processed URL': UpdateURL
           })
           break
         }
         if (LinkResultURLs.length - 1 === i) {
-          UpdateURL = ResponseObject.finalUrl
+          UpdateURL = ResponseURL
           console.warn('linkproduct-privacy: The reponse URL does NOT match any predefined URL:', {
-            'Element': LinkElement, 'Affiliate marketing URL': URLAddress, 'Response URL': ResponseObject.finalUrl
+            'Element': LinkElement, 'Affiliate marketing URL': URLAddress, 'Response URL': ResponseURL
           })
         }
       }
