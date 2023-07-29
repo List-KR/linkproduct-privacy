@@ -8,7 +8,7 @@
 // @downloadURL  https://cdn.jsdelivr.net/gh/List-KR/linkproduct-privacy@main/linkproduct-privacy.user.js
 // @license      MIT
 //
-// @version      1.2.3
+// @version      1.2.4
 // @author       PiQuark6046 and contributors
 //
 // @match        *://*/*
@@ -115,7 +115,9 @@ interface LinkProductURL {
       URLPattern: /^https:\/\/[a-z]+\.gmarket\.co\.kr\/linkprice\/lpfront\.asp/,
       ModificationFunction: function (ResultURL: string) {
         let SearchParamsURL = new URL(ResultURL).searchParams.get('url')
-        return /^https:\/\/m?item\.gmarket\.co\.kr\/(detailview\/)?Item(\.asp)?\?goodscode=[0-9]+/.exec(SearchParamsURL)[0]
+        let OriginalURL = new URL(SearchParamsURL)
+        OriginalURL.searchParams.delete('jaehuid')
+        return OriginalURL.href
       }
     },
     {
