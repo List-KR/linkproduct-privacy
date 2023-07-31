@@ -8,7 +8,7 @@
 // @downloadURL  https://cdn.jsdelivr.net/gh/List-KR/linkproduct-privacy@main/linkproduct-privacy.user.js
 // @license      MIT
 //
-// @version      1.2.4
+// @version      2.0.0
 // @author       PiQuark6046 and contributors
 //
 // @match        *://*/*
