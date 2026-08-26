@@ -27,9 +27,8 @@
 (function () {
   'use strict'
 
-  const rulesUrl = 'https://cdn.jsdelivr.net/gh/List-KR/linkproduct-privacy@main/rules.json'
-  const rulesCacheKey = 'rules-cache-v1'
-  const rulesCacheMaxAge = 60 * 60 * 1000
+  const rulesUrl = 'https://raw.githubusercontent.com/List-KR/linkproduct-privacy/main/rules.json'
+  const rulesCacheKey = 'rules-cache'
   const requestedUrls = new WeakMap()
 
   function parseHttpUrl(value) {
@@ -97,11 +96,11 @@
   function readCachedRules() {
     try {
       const cached = GM_getValue(rulesCacheKey, null)
-      if (!cached || typeof cached.fetchedAt !== 'number' || typeof cached.source !== 'string') {
+      if (!cached || typeof cached.source !== 'string') {
         return null
       }
       return {
-        fetchedAt: cached.fetchedAt,
+        source: cached.source,
         rules: compileRules(JSON.parse(cached.source))
       }
     } catch (error) {
@@ -110,7 +109,7 @@
     }
   }
 
-  function fetchRules() {
+  function fetchRules(cachedSource) {
     return new Promise((resolve, reject) => {
       GM_xmlhttpRequest({
         method: 'GET',
@@ -122,11 +121,9 @@
             if (response.status < 200 || response.status >= 300) {
               throw new Error(`Rules request failed with HTTP ${response.status}`)
             }
-            const rules = compileRules(JSON.parse(response.responseText))
-            GM_setValue(rulesCacheKey, {
-              fetchedAt: Date.now(),
-              source: response.responseText
-            })
+            const source = response.responseText
+            const rules = compileRules(JSON.parse(source))
+            if (source !== cachedSource) GM_setValue(rulesCacheKey, { source })
             resolve(rules)
           } catch (error) {
             reject(error)
@@ -140,15 +137,11 @@
 
   function loadRules() {
     const cached = readCachedRules()
-    if (cached) {
-      if (Date.now() - cached.fetchedAt >= rulesCacheMaxAge) {
-        fetchRules().catch(error =>
-          console.warn('linkproduct-privacy: could not refresh rules', error)
-        )
-      }
-      return Promise.resolve(cached.rules)
-    }
-    return fetchRules()
+    return fetchRules(cached?.source).catch(error => {
+      if (!cached) throw error
+      console.warn('linkproduct-privacy: using cached rules after refresh failed', error)
+      return cached.rules
+    })
   }
 
   function matchesUrl(rule, url) {
