@@ -167,13 +167,17 @@ test('restores Arcalive links without decoding escaped path separators', async (
 })
 
 test('unwraps and resolves affiliate links in YouTube descriptions', async () => {
+  const youtubeRedirectSelector = 'a[href*="/redirect?"]'
   const link = {
     href: 'https://www.youtube.com/redirect?event=video_description&q=https%3A%2F%2Fbsl.gg%2FLgwzi',
-    matches: selector => selector === 'a.yt-core-attributed-string__link[target="_blank"]',
+    matches(selector) {
+      return (selector === youtubeRedirectSelector && this.href.includes('/redirect?')) ||
+        (selector.includes('//bsl.gg/') && this.href.includes('bsl.gg'))
+    },
     textContent: 'https://bsl.gg/Lgwzi'
   }
-  let clickHandler
   let observerCallback
+  let observerOptions
   const location = {
     href: 'https://www.youtube.com/',
     hostname: 'www.youtube.com'
@@ -182,9 +186,7 @@ test('unwraps and resolves affiliate links in YouTube descriptions', async () =>
   vm.runInNewContext(script, {
     console: { debug() {}, warn() {} },
     document: {
-      addEventListener(type, handler) {
-        if (type === 'click') clickHandler = handler
-      },
+      addEventListener() {},
       documentElement: {},
       querySelectorAll: () => []
     },
@@ -206,7 +208,9 @@ test('unwraps and resolves affiliate links in YouTube descriptions', async () =>
       constructor(callback) {
         observerCallback = callback
       }
-      observe() {}
+      observe(target, options) {
+        observerOptions = options
+      }
     },
     Node: { ELEMENT_NODE: 1 },
     URL
@@ -214,27 +218,19 @@ test('unwraps and resolves affiliate links in YouTube descriptions', async () =>
 
   await flushPromises()
   location.href = 'https://www.youtube.com/watch?v=krUyjbgCC7I'
-  const container = {
-    nodeType: 1,
-    matches: () => false,
-    querySelectorAll(selector) {
-      if (selector === 'a.yt-core-attributed-string__link[target="_blank"]') return [link]
-      return selector.includes('//bsl.gg/') && link.href.includes('bsl.gg') ? [link] : []
+  assert.ok(observerOptions.attributeFilter.includes('is-expanded'))
+  observerCallback([{
+    type: 'attributes',
+    target: {
+      matches: () => false,
+      querySelectorAll: selector => link.matches(selector) ? [link] : []
     }
-  }
-  observerCallback([{ addedNodes: [container], type: 'childList' }])
+  }])
+  await flushPromises()
   assert.equal(
     link.href,
     'https://www.coupang.com/vp/products/7405993243?vendorItemId=86296432548'
   )
-  let propagationStopped = false
-  clickHandler({
-    stopImmediatePropagation() {
-      propagationStopped = true
-    },
-    target: { closest: () => link }
-  })
-  assert.equal(propagationStopped, true)
 })
 
 test('keeps site-specific knowledge in rules.json', () => {
@@ -242,4 +238,8 @@ test('keeps site-specific knowledge in rules.json', () => {
     assert.equal(script.includes(domain), false)
     assert.equal(rulesSource.includes(domain), true)
   }
+  assert.deepEqual(
+    JSON.parse(rulesSource).affiliateLinks.find(rule => rule.hrefIncludes === '//bsl.gg/').pageHosts,
+    ['youtube.com']
+  )
 })

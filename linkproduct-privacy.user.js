@@ -330,7 +330,7 @@
       }
     }).observe(document.documentElement, {
       attributes: true,
-      attributeFilter: ['href'],
+      attributeFilter: ['href', 'is-expanded'],
       childList: true,
       subtree: true
     })
