@@ -1,0 +1,124 @@
+{
+  "schemaVersion": 1,
+  "affiliateLinks": [
+    { "hrefIncludes": "//app.ac/" },
+    { "hrefIncludes": "//link.coupang.com/a/" },
+    { "hrefIncludes": "//link.coupang.com/re/" },
+    { "hrefIncludes": "//s.click.aliexpress.com/e/" },
+    { "hrefIncludes": "//s.click.aliexpress.com/s/" },
+    { "hrefIncludes": "//click.linkprice.com/click.php?" },
+    { "hrefIncludes": "//linkmoa.kr/click.php?" },
+    { "hrefIncludes": "//link.adpick.co.kr/" },
+    { "hrefIncludes": "//temu.to/k/" },
+    { "hrefIncludes": "//amzn.to/" },
+    {
+      "hrefIncludes": "bbs/link.php?bo_table=hot&",
+      "pageHosts": ["etoland.co.kr"]
+    }
+  ],
+  "redirects": [
+    {
+      "hosts": ["linkmoa.kr"],
+      "pathPattern": "^/click\\.php$",
+      "targetParameter": "tu"
+    },
+    {
+      "hosts": ["link.gmarket.co.kr"],
+      "pathPattern": "^/gate/",
+      "targetParameter": "target-url"
+    },
+    {
+      "hosts": ["gmarket.co.kr"],
+      "pathPattern": "^/linkprice/lpfront\\.asp$",
+      "caseInsensitive": true,
+      "targetParameter": "url"
+    },
+    {
+      "hosts": ["e-himart.co.kr"],
+      "pathPattern": "^/common/include/ipfront\\.jsp$",
+      "caseInsensitive": true,
+      "targetParameter": "url"
+    },
+    {
+      "hosts": ["11st.co.kr"],
+      "pathPattern": "^/connect/gateway\\.tmall$",
+      "caseInsensitive": true,
+      "targetParameter": "lpUrl"
+    },
+    {
+      "hosts": ["etoland.co.kr"],
+      "pathPattern": "^/bbs/link\\.php$",
+      "targetText": true
+    }
+  ],
+  "destinations": [
+    {
+      "hosts": ["gmarket.co.kr"],
+      "deleteParameters": ["jaehuid"]
+    },
+    {
+      "hosts": ["coupang.com"],
+      "pathPattern": "^/(?:vp|vm)/products/\\d+",
+      "keepParameters": ["itemId", "vendorItemId"]
+    },
+    {
+      "hosts": ["coupang.com"],
+      "pathPattern": "^/np/campaigns/\\d+",
+      "clearParameters": true
+    },
+    {
+      "hosts": ["pages.coupang.com"],
+      "pathPattern": "^/p/[A-Za-z0-9]+",
+      "clearParameters": true
+    },
+    {
+      "hosts": ["aliexpress.com"],
+      "pathPattern": "^/item/\\d+\\.html$",
+      "clearParameters": true
+    },
+    {
+      "hosts": ["temu.com"],
+      "pathPattern": "^/goods\\.html$",
+      "requiredParameters": ["goods_id"],
+      "keepParameters": ["goods_id"]
+    },
+    {
+      "hosts": ["temu.com"],
+      "pathPattern": "-g-\\d+\\.html$",
+      "clearParameters": true
+    },
+    {
+      "hosts": ["lotteon.com"],
+      "pathPattern": "/product/",
+      "clearParameters": true
+    },
+    {
+      "hostPattern": "(^|\\.)amazon\\.(?:com(?:\\.[a-z]{2})?|co\\.[a-z]{2}|[a-z]{2,3})$",
+      "pathPattern": "^/(?:.*?/)?(?:dp|gp/product)/([A-Z0-9]{10})(?:/.*)?$",
+      "caseInsensitive": true,
+      "pathReplacement": "/dp/$1",
+      "clearParameters": true,
+      "clearHash": true
+    },
+    {
+      "hosts": ["auction.co.kr"],
+      "requiredParameters": ["itemNo"],
+      "keepParameters": ["itemNo"],
+      "parameterNamesIgnoreCase": true
+    },
+    {
+      "hosts": ["11st.co.kr"],
+      "pathPattern": "^/products/\\d+",
+      "clearParameters": true
+    }
+  ],
+  "pageLinks": [
+    {
+      "hosts": ["arca.live"],
+      "pathPattern": "^/b/hotdeal/\\d+",
+      "selector": ".article-options a.external",
+      "unwrapOrigins": ["https://unsafelink.com", "https://oo.pe"],
+      "stopImmediatePropagation": true
+    }
+  ]
+}

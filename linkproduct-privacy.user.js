@@ -8,168 +8,327 @@
 // @downloadURL  https://cdn.jsdelivr.net/gh/List-KR/linkproduct-privacy@main/linkproduct-privacy.user.js
 // @license      MIT
 //
-// @version      1.2.4
-// @author       PiQuark6046 and contributors
+// @version      2.0.0
+// @author       List-KR
 //
 // @match        *://*/*
+// @connect      *
 //
-// @description        linkproduct-privacy can get original URL from an affiliate marketing URL.
-// @description:ko     linkproduct-privacy는 인플루언서 마케팅 URL에서 원본 URL을 얻을 수 있습니다.
+// @description        linkproduct-privacy gets the original URL from an affiliate marketing URL.
+// @description:ko     linkproduct-privacy는 제휴 마케팅 URL에서 원본 URL을 가져옵니다.
 //
-// @grant        unsafeWindow
+// @grant        GM_getValue
+// @grant        GM_setValue
 // @grant        GM_xmlhttpRequest
-// @run-at       document-end
+// @run-at       document-start
+// @noframes
 // ==/UserScript==
+
 (function () {
-    const GMXmlhttpRequest = typeof GM.xmlhttpRequest !== 'undefined' ? GM.xmlhttpRequest : GM_xmlhttpRequest;
-    const LinkProductURLs = [
-        {
-            URLPattern: '//app.ac/'
-        },
-        {
-            URLPattern: '//link.coupang.com/a/'
-        },
-        {
-            URLPattern: '//link.coupang.com/a/'
-        },
-        {
-            URLPattern: '//link.coupang.com/re/'
-        },
-        {
-            URLPattern: '//qoo.tn/'
-        },
-        {
-            URLPattern: '//s.click.aliexpress.com/s/'
-        },
-        {
-            URLPattern: 'bbs/link.php?bo_table=hot&',
-            OnSite: 'etoland.co.kr'
-        },
-        {
-            URLPattern: '//click.linkprice.com/click.php?'
-        }
-    ];
-    const LinkResultURLs = [
-        {
-            URLPattern: /^https:\/\/[a-z]+\.gmarket\.co\.kr\/linkprice\/lpfront\.asp/,
-            ModificationFunction: function (ResultURL) {
-                let SearchParamsURL = new URL(ResultURL).searchParams.get('url');
-                let OriginalURL = new URL(SearchParamsURL);
-                OriginalURL.searchParams.delete('jaehuid');
-                return OriginalURL.href;
-            }
-        },
-        {
-            URLPattern: /^https:\/\/[a-z]+\.wemakeprice\.com\/product\/[0-9]+/,
-            ModificationFunction: function (ResultURL) {
-                let Oringin = new URL(ResultURL).origin;
-                let Pathname = new URL(ResultURL).pathname;
-                return Oringin + Pathname;
-            }
-        },
-        {
-            URLPattern: /^https:\/\/[a-z]+\.coupang\.com\/vp\/products\/[0-9]+/,
-            ModificationFunction: function (ResultURL) {
-                let Oringin = new URL(ResultURL).origin;
-                let Pathname = new URL(ResultURL).pathname;
-                return Oringin + Pathname;
-            }
-        },
-        {
-            URLPattern: /^https?:\/\/m?item(page[0-9]+)?\.auction\.co\.kr\/[A-z]+(\.[a-z]+)?\?item(N|n)o=[A-z0-9]+/,
-            ModificationFunction: function (ResultURL) {
-                return /^https?:\/\/m?item(page[0-9]+)?\.auction\.co\.kr\/[A-z]+(\.[a-z]+)?\?item(N|n)o=[A-z0-9]+/.exec(ResultURL)[0];
-            }
-        },
-        {
-            URLPattern: /^https:\/\/(www|m)\.qoo10\.com\/g\/[0-9]+/,
-            ModificationFunction: function (ResultURL) {
-                return /^https:\/\/(www|m)\.qoo10\.com\/g\/[0-9]+/.exec(ResultURL)[0];
-            }
-        },
-        {
-            URLPattern: /^https:\/\/(www|m)\.e-himart\.co\.kr\/common\/include\/ipfront.jsp\?lpinfo=/,
-            ModificationFunction: function (ResultURL) {
-                return new URL(ResultURL).searchParams.get('url');
-            }
-        },
-        {
-            URLPattern: /^https?:\/\/(www|m)\.11st\.co\.kr\/connect\/Gateway\.tmall\?apInfo=.+&lpUrl=/,
-            ModificationFunction: function (ResultURL) {
-                let LpURL = new URL(ResultURL).searchParams.get('lpUrl');
-                return new URL(LpURL).search === '' ? LpURL : new URL(LpURL).origin + new URL(LpURL).pathname;
-            }
-        },
-        {
-            URLPattern: /^https:\/\/[a-z]+\.coupang\.com\/np\/campaigns\/[0-9]+/,
-            ModificationFunction: function (ResultURL) {
-                let Oringin = new URL(ResultURL).origin;
-                let Pathname = new URL(ResultURL).pathname;
-                return Oringin + Pathname;
-            }
-        },
-        {
-            URLPattern: /^https:\/\/pages\.coupang\.com\/p\/[A-z0-9]+/,
-            ModificationFunction: function (ResultURL) {
-                let Oringin = new URL(ResultURL).origin;
-                let Pathname = new URL(ResultURL).pathname;
-                return Oringin + Pathname;
-            }
-        },
-        {
-            URLPattern: /^https:\/\/[a-z]+\.lotteon\.com\/m\/product\/[A-z0-9]+/,
-            ModificationFunction: function (ResultURL) {
-                let Oringin = new URL(ResultURL).origin;
-                let Pathname = new URL(ResultURL).pathname;
-                return Oringin + Pathname;
-            }
-        },
-        {
-            URLPattern: /^https:\/\/(m\.)?[a-z]+\.aliexpress\.com\/item\/[0-9]+\.html/,
-            ModificationFunction: function (ResultURL) {
-                let Oringin = new URL(ResultURL).origin;
-                let Pathname = new URL(ResultURL).pathname;
-                return Oringin + Pathname;
-            }
-        },
-        {
-            URLPattern: /^https:\/\/etoland\.co\.kr\/bbs\/link\.php\?bo_table=hot&/,
-            ModificationFunction: function (ResultURL, ResultElement) {
-                return ResultElement.innerText;
-            }
-        }
-    ];
-    let LinkElements = Array.from(document.querySelectorAll(LinkProductURLs.filter(function (LinkProductURL) {
-        return typeof LinkProductURL.OnSite === 'undefined' || document.location.hostname.includes(LinkProductURL.OnSite);
-    }).map(function (Value) { return `a[href*="${Value.URLPattern}"]`; }).join(', ')));
-    console.debug('linkproduct-privacy: LinkElements: ', LinkElements);
-    for (let LinkElement of LinkElements) {
-        let URLAddress = LinkElement.getAttribute('href');
-        if (URLAddress === null) {
-            console.warn('linkproduct-privacy: URLAddress is null.', LinkElement);
-            continue;
-        }
-        GMXmlhttpRequest({ url: URLAddress, method: 'GET', responseType: 'document', anonymous: true, onload: function (ResponseObject) {
-                let UpdateURL;
-                let ResponseURL = ResponseObject.responseURL || ResponseObject.finalUrl;
-                for (let i = 0; i < LinkResultURLs.length; i++) {
-                    if (LinkResultURLs[i].URLPattern.test(ResponseURL)) {
-                        UpdateURL = LinkResultURLs[i].ModificationFunction(ResponseURL, LinkElement);
-                        console.debug('linkproduct-privacy: The reponse URL matches a predefined URL:', {
-                            'Element': LinkElement, 'Affiliate marketing URL': URLAddress, 'Response URL': ResponseURL, 'Processed URL': UpdateURL
-                        });
-                        break;
-                    }
-                    if (LinkResultURLs.length - 1 === i) {
-                        UpdateURL = ResponseURL;
-                        console.warn('linkproduct-privacy: The reponse URL does NOT match any predefined URL:', {
-                            'Element': LinkElement, 'Affiliate marketing URL': URLAddress, 'Response URL': ResponseURL
-                        });
-                    }
-                }
-                LinkElement.setAttribute('href', UpdateURL);
-                if (/^(http(s|):)?\/\/.+\..+\/.+/.test(LinkElement.innerText))
-                    LinkElement.innerText = UpdateURL;
-            } });
+  'use strict'
+
+  const rulesUrl = 'https://cdn.jsdelivr.net/gh/List-KR/linkproduct-privacy@main/rules.json'
+  const rulesCacheKey = 'rules-cache-v1'
+  const rulesCacheMaxAge = 60 * 60 * 1000
+  const requestedUrls = new WeakMap()
+
+  function parseHttpUrl(value) {
+    const url = new URL(value)
+    if (url.protocol !== 'http:' && url.protocol !== 'https:') {
+      throw new TypeError(`Unsupported URL protocol: ${url.protocol}`)
     }
-})();
+    return url
+  }
+
+  function matchesHost(hostname, hosts) {
+    return hosts.some(host => hostname === host || hostname.endsWith(`.${host}`))
+  }
+
+  function parameterNameMatches(name, expectedName, ignoreCase) {
+    return ignoreCase
+      ? name.toLowerCase() === expectedName.toLowerCase()
+      : name === expectedName
+  }
+
+  function compileUrlRule(rule) {
+    const flags = rule.caseInsensitive ? 'i' : ''
+    return {
+      ...rule,
+      hostRegex: rule.hostPattern ? new RegExp(rule.hostPattern, flags) : null,
+      pathRegex: rule.pathPattern ? new RegExp(rule.pathPattern, flags) : null
+    }
+  }
+
+  function compileRules(source) {
+    const collectionNames = ['affiliateLinks', 'redirects', 'destinations', 'pageLinks']
+    if (source?.schemaVersion !== 1 || collectionNames.some(name => !Array.isArray(source[name]))) {
+      throw new TypeError('Unsupported rules schema')
+    }
+    if (source.affiliateLinks.some(rule =>
+      typeof rule.hrefIncludes !== 'string' ||
+      (rule.pageHosts && !Array.isArray(rule.pageHosts))
+    )) {
+      throw new TypeError('Invalid affiliate link rule')
+    }
+    if (source.redirects.some(rule =>
+      !Array.isArray(rule.hosts) ||
+      (typeof rule.targetParameter !== 'string' && rule.targetText !== true)
+    )) {
+      throw new TypeError('Invalid redirect rule')
+    }
+    if (source.pageLinks.some(rule =>
+      typeof rule.selector !== 'string' ||
+      !Array.isArray(rule.unwrapOrigins)
+    )) {
+      throw new TypeError('Invalid page link rule')
+    }
+
+    return {
+      affiliateLinks: source.affiliateLinks,
+      redirects: source.redirects.map(compileUrlRule),
+      destinations: source.destinations.map(compileUrlRule),
+      pageLinks: source.pageLinks.map(rule => ({
+        ...compileUrlRule(rule),
+        unwrapOrigins: rule.unwrapOrigins.map(value => parseHttpUrl(value).origin)
+      }))
+    }
+  }
+
+  function readCachedRules() {
+    try {
+      const cached = GM_getValue(rulesCacheKey, null)
+      if (!cached || typeof cached.fetchedAt !== 'number' || typeof cached.source !== 'string') {
+        return null
+      }
+      return {
+        fetchedAt: cached.fetchedAt,
+        rules: compileRules(JSON.parse(cached.source))
+      }
+    } catch (error) {
+      console.warn('linkproduct-privacy: ignored invalid rules cache', error)
+      return null
+    }
+  }
+
+  function fetchRules() {
+    return new Promise((resolve, reject) => {
+      GM_xmlhttpRequest({
+        method: 'GET',
+        url: rulesUrl,
+        anonymous: true,
+        timeout: 10000,
+        onload(response) {
+          try {
+            if (response.status < 200 || response.status >= 300) {
+              throw new Error(`Rules request failed with HTTP ${response.status}`)
+            }
+            const rules = compileRules(JSON.parse(response.responseText))
+            GM_setValue(rulesCacheKey, {
+              fetchedAt: Date.now(),
+              source: response.responseText
+            })
+            resolve(rules)
+          } catch (error) {
+            reject(error)
+          }
+        },
+        onerror: () => reject(new Error('Rules request failed')),
+        ontimeout: () => reject(new Error('Rules request timed out'))
+      })
+    })
+  }
+
+  function loadRules() {
+    const cached = readCachedRules()
+    if (cached) {
+      if (Date.now() - cached.fetchedAt >= rulesCacheMaxAge) {
+        fetchRules().catch(error =>
+          console.warn('linkproduct-privacy: could not refresh rules', error)
+        )
+      }
+      return Promise.resolve(cached.rules)
+    }
+    return fetchRules()
+  }
+
+  function matchesUrl(rule, url) {
+    if (rule.hosts && !matchesHost(url.hostname, rule.hosts)) return false
+    if (rule.hostRegex && !rule.hostRegex.test(url.hostname)) return false
+    if (rule.pathRegex && !rule.pathRegex.test(url.pathname)) return false
+    if (rule.requiredParameters && !rule.requiredParameters.every(expectedName =>
+      [...url.searchParams.keys()].some(name =>
+        parameterNameMatches(name, expectedName, rule.parameterNamesIgnoreCase)
+      )
+    )) return false
+    return true
+  }
+
+  function createAffiliateSelector(linkRules) {
+    return linkRules
+      .filter(rule => !rule.pageHosts || matchesHost(location.hostname, rule.pageHosts))
+      .map(rule => `a[href*="${rule.hrefIncludes.replaceAll('\\', '\\\\').replaceAll('"', '\\"')}"]`)
+      .join(', ')
+  }
+
+  function unwrapUrl(responseUrl, linkElement, rules) {
+    const url = parseHttpUrl(responseUrl)
+    const rule = rules.redirects.find(candidate => matchesUrl(candidate, url))
+    if (!rule) return url
+
+    const targetUrl = rule.targetParameter
+      ? url.searchParams.get(rule.targetParameter)
+      : linkElement.textContent.trim()
+    return targetUrl ? parseHttpUrl(targetUrl) : url
+  }
+
+  function cleanUrl(responseUrl, linkElement, rules) {
+    const url = unwrapUrl(responseUrl, linkElement, rules)
+    const rule = rules.destinations.find(candidate => matchesUrl(candidate, url))
+    if (!rule) return url.href
+
+    const keptParameters = rule.keepParameters
+      ? [...url.searchParams].filter(([name]) => rule.keepParameters.some(expectedName =>
+        parameterNameMatches(name, expectedName, rule.parameterNamesIgnoreCase)
+      ))
+      : []
+
+    if (rule.pathReplacement) url.pathname = url.pathname.replace(rule.pathRegex, rule.pathReplacement)
+    if (rule.clearParameters || rule.keepParameters) url.search = ''
+    for (const [name, value] of keptParameters) url.searchParams.append(name, value)
+    for (const expectedName of rule.deleteParameters || []) {
+      for (const name of [...url.searchParams.keys()]) {
+        if (parameterNameMatches(name, expectedName, rule.parameterNamesIgnoreCase)) {
+          url.searchParams.delete(name)
+        }
+      }
+    }
+    if (rule.clearHash) url.hash = ''
+    return url.href
+  }
+
+  function restorePageLink(linkElement, rule) {
+    try {
+      let url = parseHttpUrl(linkElement.href)
+      if (rule.unwrapOrigins.includes(url.origin)) {
+        let originalUrl = url.pathname.slice(1) + url.search + url.hash
+        if (!/^https?:\/\//i.test(originalUrl)) originalUrl = decodeURIComponent(originalUrl)
+        url = parseHttpUrl(originalUrl)
+        if (linkElement.href !== url.href) linkElement.href = url.href
+      }
+      return true
+    } catch (error) {
+      console.warn('linkproduct-privacy: could not restore page link', { linkElement, error })
+      return false
+    }
+  }
+
+  function restorePageLinks(root, pageRules) {
+    for (const rule of pageRules) {
+      if (root.matches?.(rule.selector)) restorePageLink(root, rule)
+      root.querySelectorAll?.(rule.selector).forEach(linkElement => restorePageLink(linkElement, rule))
+    }
+  }
+
+  function updateLink(linkElement, rules) {
+    const affiliateUrl = linkElement.href
+    if (requestedUrls.get(linkElement) === affiliateUrl) return
+    requestedUrls.set(linkElement, affiliateUrl)
+
+    const requestFailed = (message, error) => {
+      requestedUrls.delete(linkElement)
+      console.warn(message, { linkElement, affiliateUrl, error })
+    }
+
+    GM_xmlhttpRequest({
+      method: 'GET',
+      url: affiliateUrl,
+      anonymous: true,
+      timeout: 15000,
+      onload(response) {
+        try {
+          const responseUrl = response.finalUrl || response.responseURL
+          if (!responseUrl || linkElement.href !== affiliateUrl) return
+
+          const updatedUrl = cleanUrl(responseUrl, linkElement, rules)
+          linkElement.href = updatedUrl
+          requestedUrls.set(linkElement, updatedUrl)
+
+          if (/^https?:\/\//i.test(linkElement.textContent.trim())) {
+            linkElement.textContent = updatedUrl
+          }
+
+          console.debug('linkproduct-privacy: updated link', {
+            linkElement,
+            affiliateUrl,
+            responseUrl,
+            updatedUrl
+          })
+        } catch (error) {
+          requestFailed('linkproduct-privacy: could not process link', error)
+        }
+      },
+      onerror(error) {
+        requestFailed('linkproduct-privacy: request failed', error)
+      },
+      ontimeout() {
+        requestFailed('linkproduct-privacy: request timed out')
+      }
+    })
+  }
+
+  function processAffiliateLinks(root, selector, rules) {
+    if (!selector) return
+    if (root.matches?.(selector)) updateLink(root, rules)
+    root.querySelectorAll?.(selector).forEach(linkElement => updateLink(linkElement, rules))
+  }
+
+  function start(rules) {
+    if (!document.documentElement) {
+      document.addEventListener('DOMContentLoaded', () => start(rules), { once: true })
+      return
+    }
+
+    const pageUrl = parseHttpUrl(location.href)
+    const pageRules = rules.pageLinks.filter(rule => matchesUrl(rule, pageUrl))
+    const affiliateSelector = createAffiliateSelector(rules.affiliateLinks)
+
+    restorePageLinks(document, pageRules)
+    processAffiliateLinks(document, affiliateSelector, rules)
+
+    if (pageRules.length > 0) {
+      document.addEventListener('click', event => {
+        for (const rule of pageRules) {
+          const linkElement = event.target.closest?.(rule.selector)
+          if (!linkElement || !restorePageLink(linkElement, rule)) continue
+          if (rule.stopImmediatePropagation) event.stopImmediatePropagation()
+          return
+        }
+      }, true)
+    }
+
+    new MutationObserver(mutations => {
+      for (const mutation of mutations) {
+        if (mutation.type === 'attributes') {
+          restorePageLinks(mutation.target, pageRules)
+          processAffiliateLinks(mutation.target, affiliateSelector, rules)
+          continue
+        }
+
+        for (const node of mutation.addedNodes) {
+          if (node.nodeType !== Node.ELEMENT_NODE) continue
+          restorePageLinks(node, pageRules)
+          processAffiliateLinks(node, affiliateSelector, rules)
+        }
+      }
+    }).observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['href'],
+      childList: true,
+      subtree: true
+    })
+  }
+
+  loadRules()
+    .then(start)
+    .catch(error => console.warn('linkproduct-privacy: could not load rules', error))
+})()

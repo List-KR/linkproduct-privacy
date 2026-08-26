@@ -95,3 +95,7 @@ https://cdn.jsdelivr.net/gh/List-KR/linkproduct-privacy@main/linkproduct-privacy
 [^1]: https://github.com/AdguardTeam/AdguardForiOS/issues/1542
 [^2]: https://github.com/quoid/userscripts
 [^3]: https://apps.apple.com/kr/app/userscripts/id1463298887
+
+### 개발
+
+사이트별 감지·리디렉션·URL 정리 규칙은 `rules.json`에 정의합니다. 유저스크립트는 규칙을 1시간 캐시하며, `node --test`로 규칙과 엔진을 함께 검증할 수 있습니다.
