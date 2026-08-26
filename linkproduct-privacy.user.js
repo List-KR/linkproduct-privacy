@@ -213,7 +213,11 @@
   function restorePageLink(linkElement, rule) {
     try {
       let url = parseHttpUrl(linkElement.href)
-      if (rule.unwrapOrigins.includes(url.origin)) {
+      const targetUrl = rule.targetParameter && url.searchParams.get(rule.targetParameter)
+      if (targetUrl) {
+        url = parseHttpUrl(targetUrl)
+        if (linkElement.href !== url.href) linkElement.href = url.href
+      } else if (rule.unwrapOrigins.includes(url.origin)) {
         let originalUrl = url.pathname.slice(1) + url.search + url.hash
         if (!/^https?:\/\//i.test(originalUrl)) originalUrl = decodeURIComponent(originalUrl)
         url = parseHttpUrl(originalUrl)
@@ -292,16 +296,22 @@
       return
     }
 
-    const pageUrl = parseHttpUrl(location.href)
-    const pageRules = rules.pageLinks.filter(rule => matchesUrl(rule, pageUrl))
+    const pageRuleCandidates = rules.pageLinks.filter(rule =>
+      (!rule.hosts || matchesHost(location.hostname, rule.hosts)) &&
+      (!rule.hostRegex || rule.hostRegex.test(location.hostname))
+    )
+    const getPageRules = () => {
+      const pageUrl = parseHttpUrl(location.href)
+      return pageRuleCandidates.filter(rule => matchesUrl(rule, pageUrl))
+    }
     const affiliateSelector = createAffiliateSelector(rules.affiliateLinks)
 
-    restorePageLinks(document, pageRules)
+    restorePageLinks(document, getPageRules())
     processAffiliateLinks(document, affiliateSelector, rules)
 
-    if (pageRules.length > 0) {
+    if (pageRuleCandidates.length > 0) {
       document.addEventListener('click', event => {
-        for (const rule of pageRules) {
+        for (const rule of getPageRules()) {
           const linkElement = event.target.closest?.(rule.selector)
           if (!linkElement || !restorePageLink(linkElement, rule)) continue
           if (rule.stopImmediatePropagation) event.stopImmediatePropagation()
@@ -311,6 +321,7 @@
     }
 
     new MutationObserver(mutations => {
+      const pageRules = getPageRules()
       for (const mutation of mutations) {
         if (mutation.type === 'attributes') {
           restorePageLinks(mutation.target, pageRules)

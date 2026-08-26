@@ -142,8 +142,79 @@ test('restores Arcalive links without decoding escaped path separators', async (
   assert.equal(propagationStopped, true)
 })
 
+test('unwraps and resolves affiliate links in YouTube descriptions', async () => {
+  const link = {
+    href: 'https://www.youtube.com/redirect?event=video_description&q=https%3A%2F%2Fbsl.gg%2FLgwzi',
+    matches: selector => selector === 'a.yt-core-attributed-string__link[target="_blank"]',
+    textContent: 'https://bsl.gg/Lgwzi'
+  }
+  let clickHandler
+  let observerCallback
+  const location = {
+    href: 'https://www.youtube.com/',
+    hostname: 'www.youtube.com'
+  }
+
+  vm.runInNewContext(script, {
+    console: { debug() {}, warn() {} },
+    document: {
+      addEventListener(type, handler) {
+        if (type === 'click') clickHandler = handler
+      },
+      documentElement: {},
+      querySelectorAll: () => []
+    },
+    GM_getValue: () => null,
+    GM_setValue() {},
+    GM_xmlhttpRequest({ url, onload }) {
+      if (url === rulesUrl) {
+        onload({ responseText: rulesSource, status: 200 })
+      } else if (url === 'https://bsl.gg/Lgwzi') {
+        onload({
+          finalUrl: 'https://www.coupang.com/vp/products/7405993243?vendorItemId=86296432548&lptag=affiliate'
+        })
+      } else {
+        assert.fail(`unexpected request: ${url}`)
+      }
+    },
+    location,
+    MutationObserver: class {
+      constructor(callback) {
+        observerCallback = callback
+      }
+      observe() {}
+    },
+    Node: { ELEMENT_NODE: 1 },
+    URL
+  })
+
+  await flushPromises()
+  location.href = 'https://www.youtube.com/watch?v=krUyjbgCC7I'
+  const container = {
+    nodeType: 1,
+    matches: () => false,
+    querySelectorAll(selector) {
+      if (selector === 'a.yt-core-attributed-string__link[target="_blank"]') return [link]
+      return selector.includes('//bsl.gg/') && link.href.includes('bsl.gg') ? [link] : []
+    }
+  }
+  observerCallback([{ addedNodes: [container], type: 'childList' }])
+  assert.equal(
+    link.href,
+    'https://www.coupang.com/vp/products/7405993243?vendorItemId=86296432548'
+  )
+  let propagationStopped = false
+  clickHandler({
+    stopImmediatePropagation() {
+      propagationStopped = true
+    },
+    target: { closest: () => link }
+  })
+  assert.equal(propagationStopped, true)
+})
+
 test('keeps site-specific knowledge in rules.json', () => {
-  for (const domain of ['arca.live', 'coupang.com', 'aliexpress.com', 'amazon']) {
+  for (const domain of ['arca.live', 'youtube.com', 'coupang.com', 'aliexpress.com', 'amazon']) {
     assert.equal(script.includes(domain), false)
     assert.equal(rulesSource.includes(domain), true)
   }

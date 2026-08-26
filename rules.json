@@ -11,6 +11,7 @@
     { "hrefIncludes": "//link.adpick.co.kr/" },
     { "hrefIncludes": "//temu.to/k/" },
     { "hrefIncludes": "//amzn.to/" },
+    { "hrefIncludes": "//bsl.gg/" },
     {
       "hrefIncludes": "bbs/link.php?bo_table=hot&",
       "pageHosts": ["etoland.co.kr"]
@@ -123,6 +124,14 @@
       "pathPattern": "^/b/hotdeal/\\d+",
       "selector": ".article-options a.external",
       "unwrapOrigins": ["https://unsafelink.com", "https://oo.pe"],
+      "stopImmediatePropagation": true
+    },
+    {
+      "hosts": ["youtube.com"],
+      "pathPattern": "^/(?:watch|shorts/)",
+      "selector": "a.yt-core-attributed-string__link[target=\"_blank\"]",
+      "targetParameter": "q",
+      "unwrapOrigins": [],
       "stopImmediatePropagation": true
     }
   ]
