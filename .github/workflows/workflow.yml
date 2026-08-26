@@ -1,7 +1,13 @@
-name: Run CodeQL and purge jsDelivr cache
+name: Test, analyze, and purge jsDelivr cache
 
 on:
   push:
+    branches: [main]
+    paths:
+      - .github/workflows/workflow.yml
+      - linkproduct-privacy.user.js
+      - linkproduct-privacy.user.test.js
+      - rules.json
   pull_request:
   schedule:
     - cron: '34 0 * * 2'
@@ -15,7 +21,7 @@ jobs:
       contents: read
       security-events: write
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: github/codeql-action/init@v4
         with:
           languages: javascript-typescript
@@ -29,9 +35,15 @@ jobs:
       actions: read
       contents: read
     needs: analyze
-    if: github.event_name == 'push' && github.ref_name == 'main'
+    if: github.event_name != 'pull_request'
     steps:
-      - name: Run jsDelivr-Purge
-        uses: List-KR/jsdelivr-purge@v4
+      - name: Set up Node.js LTS
+        uses: actions/setup-node@v7
         with:
-          branches: main
+          node-version: lts/*
+      - name: Checkout full history
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - name: Run jsDelivr-Purge
+        uses: List-KR/jsdelivr-purge@7.0.0
