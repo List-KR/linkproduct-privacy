@@ -53,6 +53,11 @@
   ],
   "destinations": [
     {
+      "deleteParameters": ["affiliate"],
+      "deleteParameterPrefixes": ["utm_"],
+      "parameterNamesIgnoreCase": true
+    },
+    {
       "hosts": ["gmarket.co.kr"],
       "deleteParameters": ["jaehuid"]
     },

@@ -183,26 +183,30 @@
 
   function cleanUrl(responseUrl, linkElement, rules) {
     const url = unwrapUrl(responseUrl, linkElement, rules)
-    const rule = rules.destinations.find(candidate => matchesUrl(candidate, url))
-    if (!rule) return url.href
+    for (const rule of rules.destinations.filter(candidate => matchesUrl(candidate, url))) {
+      const keptParameters = rule.keepParameters
+        ? [...url.searchParams].filter(([name]) => rule.keepParameters.some(expectedName =>
+          parameterNameMatches(name, expectedName, rule.parameterNamesIgnoreCase)
+        ))
+        : []
 
-    const keptParameters = rule.keepParameters
-      ? [...url.searchParams].filter(([name]) => rule.keepParameters.some(expectedName =>
-        parameterNameMatches(name, expectedName, rule.parameterNamesIgnoreCase)
-      ))
-      : []
-
-    if (rule.pathReplacement) url.pathname = url.pathname.replace(rule.pathRegex, rule.pathReplacement)
-    if (rule.clearParameters || rule.keepParameters) url.search = ''
-    for (const [name, value] of keptParameters) url.searchParams.append(name, value)
-    for (const expectedName of rule.deleteParameters || []) {
+      if (rule.pathReplacement) url.pathname = url.pathname.replace(rule.pathRegex, rule.pathReplacement)
+      if (rule.clearParameters || rule.keepParameters) url.search = ''
+      for (const [name, value] of keptParameters) url.searchParams.append(name, value)
       for (const name of [...url.searchParams.keys()]) {
-        if (parameterNameMatches(name, expectedName, rule.parameterNamesIgnoreCase)) {
+        const shouldDelete = (rule.deleteParameters || []).some(expectedName =>
+          parameterNameMatches(name, expectedName, rule.parameterNamesIgnoreCase)
+        ) || (rule.deleteParameterPrefixes || []).some(prefix =>
+          rule.parameterNamesIgnoreCase
+            ? name.toLowerCase().startsWith(prefix.toLowerCase())
+            : name.startsWith(prefix)
+        )
+        if (shouldDelete) {
           url.searchParams.delete(name)
         }
       }
+      if (rule.clearHash) url.hash = ''
     }
-    if (rule.clearHash) url.hash = ''
     return url.href
   }
 

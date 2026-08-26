@@ -84,6 +84,11 @@ test('loads rules and removes tracking without breaking redirect links', async (
       affiliateUrl: 'https://link.adpick.co.kr/example',
       responseUrl: 'https://www.lotteon.com/m/product/example?affiliate=tracking',
       expectedUrl: 'https://www.lotteon.com/m/product/example'
+    },
+    {
+      affiliateUrl: 'https://click.linkprice.com/click.php?m=homeplus&a=test',
+      responseUrl: 'https://mfront.homeplus.co.kr/item?itemNo=058629913&storeType=HYPER&utm_source=linkprice&utm_medium=viral_banner&utm_campaign=affiliate&affiliate=tracking',
+      expectedUrl: 'https://mfront.homeplus.co.kr/item?itemNo=058629913&storeType=HYPER'
     }
   ]
 
