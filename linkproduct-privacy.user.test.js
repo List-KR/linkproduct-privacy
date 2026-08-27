@@ -98,15 +98,23 @@ test('loads rules and removes tracking without breaking redirect links', async (
 test('refreshes cached rules from GitHub Raw when their contents change', async () => {
   const refreshedSource = `${rulesSource}\n`
   let savedRules
+  let finishRefresh
+  let started = false
 
   vm.runInNewContext(script, {
     console: { debug() {}, warn() {} },
-    document: { documentElement: {}, querySelectorAll: () => [] },
+    document: {
+      documentElement: {},
+      querySelectorAll() {
+        started = true
+        return []
+      }
+    },
     GM_getValue: () => ({ source: rulesSource }),
     GM_setValue: (key, value) => { savedRules = { key, value } },
     GM_xmlhttpRequest({ url, onload }) {
       assert.equal(url, rulesUrl)
-      onload({ responseText: refreshedSource, status: 200 })
+      finishRefresh = () => onload({ responseText: refreshedSource, status: 200 })
     },
     location: { href: 'https://example.com/', hostname: 'example.com' },
     MutationObserver: class { observe() {} },
@@ -115,7 +123,12 @@ test('refreshes cached rules from GitHub Raw when their contents change', async 
   })
 
   await flushPromises()
+  assert.equal(started, true)
+  assert.equal(savedRules, undefined)
+  finishRefresh()
+  await flushPromises()
   assert.equal(savedRules.key, 'rules-cache')
+  assert.equal(typeof savedRules.value.fetchedAt, 'number')
   assert.equal(savedRules.value.source, refreshedSource)
 })
 

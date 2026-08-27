@@ -8,7 +8,7 @@
 // @downloadURL  https://cdn.jsdelivr.net/gh/List-KR/linkproduct-privacy@main/linkproduct-privacy.user.js
 // @license      MIT
 //
-// @version      2.0.2
+// @version      2.0.3
 // @author       List-KR
 //
 // @match        *://*/*
@@ -29,6 +29,7 @@
 
   const rulesUrl = 'https://raw.githubusercontent.com/List-KR/linkproduct-privacy/main/rules.json'
   const rulesCacheKey = 'rules-cache'
+  const rulesCacheMaxAge = 60 * 60 * 1000
   const requestedUrls = new WeakMap()
 
   function parseHttpUrl(value) {
@@ -100,6 +101,7 @@
         return null
       }
       return {
+        fetchedAt: typeof cached.fetchedAt === 'number' ? cached.fetchedAt : 0,
         source: cached.source,
         rules: compileRules(JSON.parse(cached.source))
       }
@@ -109,7 +111,7 @@
     }
   }
 
-  function fetchRules(cachedSource) {
+  function fetchRules() {
     return new Promise((resolve, reject) => {
       GM_xmlhttpRequest({
         method: 'GET',
@@ -123,7 +125,7 @@
             }
             const source = response.responseText
             const rules = compileRules(JSON.parse(source))
-            if (source !== cachedSource) GM_setValue(rulesCacheKey, { source })
+            GM_setValue(rulesCacheKey, { fetchedAt: Date.now(), source })
             resolve(rules)
           } catch (error) {
             reject(error)
@@ -137,11 +139,13 @@
 
   function loadRules() {
     const cached = readCachedRules()
-    return fetchRules(cached?.source).catch(error => {
-      if (!cached) throw error
-      console.warn('linkproduct-privacy: using cached rules after refresh failed', error)
-      return cached.rules
-    })
+    if (!cached) return fetchRules()
+    if (Date.now() - cached.fetchedAt >= rulesCacheMaxAge) {
+      fetchRules().catch(error =>
+        console.warn('linkproduct-privacy: could not refresh rules', error)
+      )
+    }
+    return Promise.resolve(cached.rules)
   }
 
   function matchesUrl(rule, url) {
