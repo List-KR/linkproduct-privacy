@@ -132,12 +132,17 @@ test('refreshes cached rules from GitHub Raw when their contents change', async 
   assert.equal(savedRules.value.source, refreshedSource)
 })
 
-test('restores Arcalive links without decoding escaped path separators', async () => {
+test('restores and cleans Arcalive Hot Deal links', async () => {
   const originalUrl = 'https://example.com/products/a%2Fb?item=123'
+  const tossAffiliateUrl = 'https://toss.im/_m/example?item=123&k=affiliate'
   const link = {
     href: `https://unsafelink.com/${originalUrl}`,
     matches: selector => selector === '.article-options a.external',
     textContent: originalUrl
+  }
+  const tossLink = {
+    href: tossAffiliateUrl,
+    textContent: tossAffiliateUrl
   }
   let clickHandler
 
@@ -148,13 +153,17 @@ test('restores Arcalive links without decoding escaped path separators', async (
         if (type === 'click') clickHandler = handler
       },
       documentElement: {},
-      querySelectorAll: selector => selector === '.article-options a.external' ? [link] : []
+      querySelectorAll(selector) {
+        if (selector === '.article-options a.external') return [link, tossLink]
+        return selector.includes('//toss.im/') ? [tossLink] : []
+      }
     },
     GM_getValue: () => null,
     GM_setValue() {},
     GM_xmlhttpRequest({ url, onload }) {
       if (url === rulesUrl) onload({ responseText: rulesSource, status: 200 })
-      else assert.fail('restored links should not make an affiliate request')
+      else if (url === tossAffiliateUrl) onload({ finalUrl: tossAffiliateUrl })
+      else assert.fail(`unexpected request: ${url}`)
     },
     location: {
       href: 'https://arca.live/b/hotdeal/123',
@@ -169,6 +178,7 @@ test('restores Arcalive links without decoding escaped path separators', async (
 
   await flushPromises()
   assert.equal(link.href, originalUrl)
+  assert.equal(tossLink.href, 'https://toss.im/_m/example?item=123')
   let propagationStopped = false
   clickHandler({
     stopImmediatePropagation() {
