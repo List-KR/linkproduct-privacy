@@ -56,9 +56,9 @@ test('loads rules and removes tracking without breaking redirect links', async (
       expectedUrl: 'https://www.coupang.com/vp/products/123?itemId=456&vendorItemId=789'
     },
     {
-      affiliateUrl: 'https://link.coupang.com/re/AFF?itemId=456&subid=required',
-      responseUrl: 'https://link.coupang.com/re/AFF?itemId=456&subid=required',
-      expectedUrl: 'https://link.coupang.com/re/AFF?itemId=456&subid=required'
+      affiliateUrl: 'https://link.coupang.com/re/AFF?itemId=456&subid=required&k=required',
+      responseUrl: 'https://link.coupang.com/re/AFF?itemId=456&subid=required&k=required',
+      expectedUrl: 'https://link.coupang.com/re/AFF?itemId=456&subid=required&k=required'
     },
     {
       affiliateUrl: 'https://s.click.aliexpress.com/e/example',
@@ -134,7 +134,8 @@ test('refreshes cached rules from GitHub Raw when their contents change', async 
 
 test('restores and cleans Arcalive Hot Deal links', async () => {
   const originalUrl = 'https://example.com/products/a%2Fb?item=123'
-  const tossAffiliateUrl = 'https://toss.im/_m/example?item=123&k=affiliate'
+  const tossAffiliateUrl = 'https://toss.im/_m/example'
+  const tossRedirectUrl = 'https://shop.example.com/products/123?item=123&k=affiliate'
   const link = {
     href: `https://unsafelink.com/${originalUrl}`,
     matches: selector => selector === '.article-options a.external',
@@ -162,7 +163,7 @@ test('restores and cleans Arcalive Hot Deal links', async () => {
     GM_setValue() {},
     GM_xmlhttpRequest({ url, onload }) {
       if (url === rulesUrl) onload({ responseText: rulesSource, status: 200 })
-      else if (url === tossAffiliateUrl) onload({ finalUrl: tossAffiliateUrl })
+      else if (url === tossAffiliateUrl) onload({ finalUrl: tossRedirectUrl })
       else assert.fail(`unexpected request: ${url}`)
     },
     location: {
@@ -178,7 +179,7 @@ test('restores and cleans Arcalive Hot Deal links', async () => {
 
   await flushPromises()
   assert.equal(link.href, originalUrl)
-  assert.equal(tossLink.href, 'https://toss.im/_m/example?item=123')
+  assert.equal(tossLink.href, 'https://shop.example.com/products/123?item=123')
   let propagationStopped = false
   clickHandler({
     stopImmediatePropagation() {

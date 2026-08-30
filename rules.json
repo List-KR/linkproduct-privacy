@@ -11,7 +11,11 @@
     { "hrefIncludes": "//link.adpick.co.kr/" },
     { "hrefIncludes": "//temu.to/k/" },
     { "hrefIncludes": "//amzn.to/" },
-    { "hrefIncludes": "//toss.im/", "pageHosts": ["arca.live"] },
+    {
+      "hrefIncludes": "//toss.im/",
+      "pageHosts": ["arca.live"],
+      "deleteFinalParameters": ["k"]
+    },
     { "hrefIncludes": "//bsl.gg/", "pageHosts": ["youtube.com"] },
     {
       "hrefIncludes": "bbs/link.php?bo_table=hot&",
@@ -58,10 +62,6 @@
       "deleteParameters": ["affiliate"],
       "deleteParameterPrefixes": ["utm_"],
       "parameterNamesIgnoreCase": true
-    },
-    {
-      "hosts": ["toss.im"],
-      "deleteParameters": ["k"]
     },
     {
       "hosts": ["gmarket.co.kr"],

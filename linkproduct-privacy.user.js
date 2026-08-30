@@ -66,7 +66,8 @@
     }
     if (source.affiliateLinks.some(rule =>
       typeof rule.hrefIncludes !== 'string' ||
-      (rule.pageHosts && !Array.isArray(rule.pageHosts))
+      (rule.pageHosts && !Array.isArray(rule.pageHosts)) ||
+      (rule.deleteFinalParameters && !Array.isArray(rule.deleteFinalParameters))
     )) {
       throw new TypeError('Invalid affiliate link rule')
     }
@@ -180,6 +181,7 @@
 
   function cleanUrl(responseUrl, linkElement, rules) {
     const url = unwrapUrl(responseUrl, linkElement, rules)
+    const affiliateRule = rules.affiliateLinks.find(rule => linkElement.href.includes(rule.hrefIncludes))
     for (const rule of rules.destinations.filter(candidate => matchesUrl(candidate, url))) {
       const keptParameters = rule.keepParameters
         ? [...url.searchParams].filter(([name]) => rule.keepParameters.some(expectedName =>
@@ -204,6 +206,7 @@
       }
       if (rule.clearHash) url.hash = ''
     }
+    for (const name of affiliateRule?.deleteFinalParameters || []) url.searchParams.delete(name)
     return url.href
   }
 
