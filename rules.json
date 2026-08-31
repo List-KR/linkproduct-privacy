@@ -14,7 +14,7 @@
     {
       "hrefIncludes": "//toss.im/",
       "pageHosts": ["arca.live"],
-      "deleteFinalParameters": ["k"]
+      "deleteFinalParameters": ["k", "referrer"]
     },
     { "hrefIncludes": "//bsl.gg/", "pageHosts": ["youtube.com"] },
     {

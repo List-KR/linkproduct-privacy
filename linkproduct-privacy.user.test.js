@@ -135,7 +135,7 @@ test('refreshes cached rules from GitHub Raw when their contents change', async 
 test('restores and cleans Arcalive Hot Deal links', async () => {
   const originalUrl = 'https://example.com/products/a%2Fb?item=123'
   const tossAffiliateUrl = 'https://toss.im/_m/example'
-  const tossRedirectUrl = 'https://shop.example.com/products/123?item=123&k=affiliate'
+  const tossRedirectUrl = 'https://toss.shopping/products/123?item=123&k=affiliate&referrer=affiliate'
   const link = {
     href: `https://unsafelink.com/${originalUrl}`,
     matches: selector => selector === '.article-options a.external',
@@ -179,7 +179,7 @@ test('restores and cleans Arcalive Hot Deal links', async () => {
 
   await flushPromises()
   assert.equal(link.href, originalUrl)
-  assert.equal(tossLink.href, 'https://shop.example.com/products/123?item=123')
+  assert.equal(tossLink.href, 'https://toss.shopping/products/123?item=123')
   let propagationStopped = false
   clickHandler({
     stopImmediatePropagation() {
