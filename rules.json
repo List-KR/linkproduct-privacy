@@ -16,6 +16,11 @@
       "pageHosts": ["arca.live"],
       "deleteFinalParameters": ["k", "referrer"]
     },
+    {
+      "hrefIncludes": "//toss.shopping/",
+      "pageHosts": ["arca.live"],
+      "deleteFinalParameters": ["k", "referrer"]
+    },
     { "hrefIncludes": "//bsl.gg/", "pageHosts": ["youtube.com"] },
     {
       "hrefIncludes": "bbs/link.php?bo_table=hot&",
